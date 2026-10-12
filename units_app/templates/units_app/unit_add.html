@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit Form</title>
+    <style>
+    body {
+        font-family: sans-serif;
+        margin: 0;
+        background-color: #f4f6f9;
+        /* body ကို screen မျက်နှာပြင် အပြည့်ယူပြီး အလယ်တည့်တည့် ပို့ရန် Flexbox သုံးခြင်း */
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+        overflow-y: auto;
+        padding: 20px 0;
+    }
+    .form-container {
+        background: white;
+        padding: 25px;
+        width: 400px;
+        border-radius: 5px;
+        box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+    input[type="text"] { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+    .btn { padding: 10px 15px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    .back-link { display: inline-block; margin-top: 15px; text-decoration: none; color: #007bff; }
+</style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>
+        {% if unit %}
+            <!-- Update (ပြင်ဆင်ခြင်း) ဖြစ်နေစဉ် -->
+            {% if current_category == 'HQ' %} အချက်အလက်များ ပြင်ဆင်ရန်
+            {% elif current_category == 'Division' %} အချက်အလက်များ ပြင်ဆင်ရန်
+            {% elif current_category == 'SKK' %} အချက်အလက်များ ပြင်ဆင်ရန်
+            {% else %} အချက်အလက်များ ပြင်ဆင်ရန် {% endif %}
+        {% else %}
+            <!-- Add (အသစ်ထည့်ခြင်း) ဖြစ်နေစဉ် -->
+            {% if current_category == 'HQ' %}တိုင်းစစ်ဌာနချုပ် အသစ်ထည့်ရန်
+            {% elif current_category == 'Division' %}တမခ အသစ်ထည့်ရန်
+            {% elif current_category == 'SKK' %}စကခ အသစ်ထည့်ရန်
+            {% elif current_category == 'ArmsHQ' %} ညွှန်ကြားရေးမှူးရုံး အသစ်ထည့်ရန်
+            {% else %}တပ်ရင်း အသစ်ထည့်ရန်{% endif %}
+        {% endif %}
+    </h2>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+           <!-- တိုင်း (HQ)၊ တပ်မ (Division) နှင့် စကခ (SKK) တို့တွင်သာ Badge ဖြည့်ရန် ပေါ်မည် -->
+            {% if current_category == 'ArmsHQ' or current_category == 'HQ' or current_category == 'Division' or current_category == 'SKK' or current_category == 'Training' %}
+                <div class="form-group mb-3">
+                     <label class="form-label">Badge(တံဆိပ်ပုံ):</label>
+
+                <!-- 💡 အကယ်၍ ပုံဟောင်းရှိပြီးသားဆိုလျှင် ပုံငယ် (Preview) ကို ပြပေးရန် -->
+                {% if unit and unit.badge %}
+                    <div class="mb-2">
+                        <img src="{{ unit.badge.url }}" width="50" height="50" style="object-fit: cover; border-radius: 4px;" alt="Current Badge">
+                        <small class="text-muted d-block"></small>
+                    </div>
+                {% endif %}
+
+                <!-- 💡 type="file" ထဲမှ value="" ကို ဖြုတ်လိုက်ပါ -->
+                <input type="file" class="form-control" name="badge" accept="image/*">
+                </div>
+            {% endif %}
+
+            <div class="form-group">
+    <label>
+        {% if current_category == 'ArmsHQ' %}လက်ရုံး/ဝန်ထမ်းဌာနချုပ် အမည်[span_1](start_span)[span_1](end_span):
+        {% elif current_category == 'HQ' %}တိုင်းစစ်ဌာနချုပ် အမည်[span_2](start_span)[span_2](end_span):
+        {% elif current_category == 'Division' or current_category == 'SKK' %}တမခ/စကခ အမည်[span_3](start_span)[span_3](end_span):
+        {% else %}တပ်ရင်း အမည်[span_4](start_span)[span_4](end_span):
+        {% endif %}
+    </label>
+
+    <!-- 💡 value ထဲတွင် ရှုပ်ထွေးနေခြင်းကို ရှောင်ရှားရန် ဤကုဒ်ကို အသုံးပြုပါ -->
+    <input type="text" name="unit_name" class="form-control" value="{% if unit %}{% if unit.arm_name %}{{ unit.arm_name }}{% elif unit.unit_name %}{{ unit.unit_name }}{% elif unit.command_name %}{{ unit.command_name }}{% endif %}{% endif %}" >
+</div>
+
+            <div class="form-group">
+                <label>တည်နေရာ:</label>
+                <input type="text" name="location" value="{% if unit.location %}{{ unit.location }}{% endif %}" >
+            </div>
+
+
+            <div class="form-group">
+                <label>ကွပ်ကဲမှု:</label>
+                <input type="text" name="superior_command" value="{% if unit %}{{ unit.superior_command }}{% endif %}">
+            </div>
+            {% if current_category == 'Artillery' or current_category == 'Armored' or current_category == 'Signals' or current_category == 'Training'%}
+            <div class="form-group">
+                <label class="form-label">တိုင်းစစ်ဌာနချုပ် (ဥပမာ - နမခ):</label>
+                 <input type="text" name="command_hq" class="form-control" value="{% if unit %}{{ unit.command_hq }}{% endif %}">
+            </div>
+            {% endif %}
+
+
+            <button type="submit" class="btn">သိမ်းဆည်းမည်</button>
+        </form>
+        <a href="/?cat={{ current_category }}" class="back-link">← စာရင်းသို့ ပြန်သွားရန်</a>
+    </div>
+</body>
+</html>

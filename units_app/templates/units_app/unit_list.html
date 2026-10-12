@@ -1,0 +1,812 @@
+{% load my_filters %}
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>တပ်ဖွဲ့များ စာရင်း</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        /* ==========================================
+           Modern Google-Style & Responsive CSS
+           ========================================== */
+
+        :root {
+            --navbar-bg: #ffffff;
+            --navbar-height: 64px;
+            --border-color: #dadce0;
+            --text-color: #3c4043;
+            --primary-color: #1a73e8;
+            --hover-bg: #f1f3f4;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+                         "Pyidaungsu", "Myanmar Unicode", sans-serif !important;
+            background-color: #f4f6f9;
+            display: flex;
+            flex-direction: column;
+            letter-spacing: -0.1px;
+        }
+
+        /* Navbar ပုံစံအတွက် relative ထားရှိရန် */
+        .top-navbar {
+            position: relative;
+            background-color: #ffffff;
+            padding: 5px 5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+
+        }
+
+        .menu-btn {
+            font-size: 25px;
+            cursor: pointer;
+            color: #ffffff;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .menu-btn:hover {
+            background-color: #e8eaed;
+            color: var(--primary-color);
+        }
+
+        .search-container {
+            position: relative;
+            display: inline-block;
+        }
+        .search-input {
+            width: 0;
+            opacity: 0;
+            transition: all 0.4s ease-in-out;
+            padding: 8px 35px 8px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            outline: none;
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #f1f3f4;
+            font-size: 14px;
+            pointer-events: none;
+            box-sizing: border-box;
+        }
+          /* Search ဖွင့်လိုက်ချိန် (Active) - ဖုန်းစခရင်အပြည့် ရောက်စေရန် */
+        .search-container.active {
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            z-index: 50;
+            background: #fff;
+            padding: 5px;
+        }
+          .search-container.active .search-input {
+            width: 100% !important;
+            opacity: 1;
+            position: relative;
+            right: auto;
+            top: auto;
+            transform: none;
+            pointer-events: auto;
+        }
+
+        /* X (Clear) ခလုတ်ကို ညာဘက်အစွန်သို ပိုခြင်း */
+        .clear-btn {
+            position: absolute;
+            right: 45px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: #888;
+            font-weight: bold;
+            font-size: 14px;
+            z-index: 60;
+        }
+           .search-container.active .clear-btn {
+            right: 50px;
+        }
+        .clear-btn:hover {
+            color: #000000;
+        }
+
+        /* ၂။ Main Content (အလယ်ပိုင်းဧရိယာ) */
+        .main-content {
+            flex: 1;
+            max-width: 1000px;
+            width: 100%;
+            margin: 20px auto;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ၃။ Sidebar မီနူး စတိုင်လ် */
+        .sidebar {
+            height: 100vh;
+            width: 0;
+            position: fixed;
+            z-index: 3000;
+            top: 0;
+            left: 0;
+            background-color: #2c3e50;
+            overflow-x: hidden;
+            overflow-y: auto;
+            transition: 0.3s;
+            padding-top: 60px;
+            box-shadow: 3px 0 10px rgba(0,0,0,0.3);
+        }
+        .sidebar-content {
+            height: auto;
+            min-height: 100%;
+            padding-bottom: 80px;
+        }
+        .sidebar h3 {
+            color: white;
+            padding-left: 25px;
+            font-size: 18px;
+            border-bottom: 1px solid #4e657b;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .sidebar a {
+            padding: 10px 15px 10px 25px;
+            text-decoration: none;
+            font-size: 15px;
+            color: #ecf0f1;
+            display: block;
+            transition: 0.2s;
+        }
+        .sidebar a:hover {
+            background-color: #34495e;
+            color: #ffffff;
+        }
+        .sidebar .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 30px;
+            color: white;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* ၄။ ဇယားကွက်နှင့် ခလုတ်များ */
+        table {
+            width: 100%;
+            max-width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: white;
+            table-layout: auto;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #2c3e50;
+            color: white;
+        }
+        .table th {
+            white-space: nowrap;
+        }
+
+        td a, th a {
+            text-decoration: none !important;
+        }
+        td a:hover, th a:hover {
+            text-decoration: none !important;
+        }
+
+        .btn {
+            background: #3498db;
+            color: white;
+            padding: 7px 14px;
+            text-decoration: none;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+            font-size: 14px;
+        }
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        /* ၅။ Footer စတိုင်လ် */
+        .footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            font-size: 14px;
+            width: 100%;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+        }
+         .top-navbar li {
+        list-style-type: none !important;
+    }
+
+        /* ဖုန်းစခရင်များအတွက် Responsive */
+        @media screen and (max-width: 768px) {
+            .top-navbar {
+                flex-direction: row;
+                justify-content: space-between;
+                padding: 8px 12px;
+                height: auto;
+                min-height: 60px;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .search-container.active .search-input {
+                width: 180px;
+            }
+            .btn {
+                padding: 6px 10px;
+                font-size: 13px;
+            }
+
+            /* 💡 ဇယားနှင့် ၎င်းကို အုပ်ထားသော ဧရိယာ ဖုန်းစခရင်အပြည့် ရောက်စေရန် ဤသို့ ထည့်ပါ */
+            .main-content {
+                width: 100% !important;
+                max-width: 100%;
+                 overflow-x: auto;
+                padding: 0 5px !important;
+
+            }
+             /* 💡 ဇယားကို ဘယ်ညာ ရွှေ့ဆွဲနိုင်ရန် (Horizontal Scroll) ပြန်ဖန်တီးခြင်း */
+            .table-responsive {
+                width: 100% !important;
+                display: block;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch;
+                white-space: nowrap;
+            }
+             table {
+                width: max-content !important; /* Column များက အကျယ်အဝန်းအလိုက် ဘယ်ညာ ဖြန့်ထွက်မည် */
+
+                min-width: 100%;
+                table-layout: auto;
+
+            }
+
+            th, td {
+                white-space: nowrap; /* စာသားများ တစ်ကြောင်းတည်း ဆੰ့ထွက်စေရန် */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ဘေးဘား မီနူး (Sidebar Drawer) -->
+    <div id="mySidebar" class="sidebar">
+        <div class="sidebar-content">
+        <button class="close-btn" onclick="closeSidebar()">&times;</button>
+        <h3>တပ်ဖွဲ့များ</h3>
+        <a href="?cat=HQ">တိုင်းစစ်ဌာနချုပ်များ</a>
+        <a href="?cat=Division">တပ်မဌာနချုပ်များ(တမခ)</a>
+        <a href="?cat=SKK">စစ်ဆင်ရေးကွပ်ကဲမှုဌာနချုပ်များ(စကခ)</a>
+        <a href="?cat=Infantry">ခြေလျင်တပ်ရင်းများ</a>
+        <a href="?cat=LightInfantry">ခြေမြန်တပ်ရင်းများ</a>
+        <a href="?cat=ArmsHQ">လက်ရုံး/ဝန်ထမ်း</a>
+        <a href="?cat=Artillery">အမြောက်တပ်များ</a>
+        <a href="?cat=Armored">သံချပ်ကာတပ်များ</a>
+
+            <a href="?cat=Signals">ဆက်သွယ်ရေးတပ်များ</a>
+        <a href="?cat=Training">သင်တန်းကျောင်းများ</a>
+        </div>
+    </div>
+
+    <!-- ထိပ်ဆုံး Top Navbar -->
+    <div class="top-navbar" style="display: flex; justify-content: space-between; align-items: center; padding: 5px 5px; background-color: #0d3b66; border-bottom: 1px solid #dee2e6;min-height:auto;">
+
+    <!-- ဘယ်ဘက်ခြမ်း: Home နဲ့ Menu -->
+    <div style="display: flex; align-items: center;">
+        <!-- အပြာရောင်နောက်ခံမပါဘဲ ပိုမိုသပ်ရပ်သော Home ခလုတ်ပုံစံ -->
+<a href="{% url 'unit_list' %}" class="btn btn-sm btn-outline-secondary" style="border-radius: 4px; border: 1px solid #ced4da; background-color: transparent; border:none;box-shadow:none;">
+    <i class="bi bi-house" style="font-size: 25px; color:#ffffff;"></i>
+</a>
+        <button class="menu-btn" onclick="openSidebar()" style="padding: 5px 10px; background-color: transparent;border:none;box-shadow:none; width:30px; height: 30px;">☰ </button>
+    </div>
+
+    <!-- ညာဘက်ခြမ်း: Search Bar နှင့် Login/Logout (အလွန်အမင်း မကျယ်သွားစေရန် အတူတကွ စုစည်းထားသည်) -->
+    <div style="display: flex; align-items: center; gap: 10px; margin-left: auto;">
+
+       <!-- Search Bar -->
+        <div class="search-container" id="searchContainer">
+            <form method="GET" action="" style="display: flex; align-items: center; position: relative; margin: 0; width: 100%;">
+                <input type="hidden" name="cat" value="{{ current_category }}">
+
+                <!-- Search Input -->
+                <input type="text" name="q" id="searchInput" class="search-input" placeholder="ရှာရန်..." value="{{ request.GET.q }}">
+
+                <!-- ✕ ပိတ်ရန် ခလုတ် -->
+                <button type="button" class="clear-btn" id="clearBtn" onclick="clearSearch()" style="display: none;">
+                    ✕
+                </button>
+
+                <!-- Search Icon ခလုတ် -->
+                <button type="button" class="search-btn" onclick="toggleSearch()" style="background: none; border: none; cursor: pointer; font-size: 16px; padding: 8px;">
+                     <i class="bi bi-search" style="font-size: 20px; color: #ffffff;"></i>
+                </button>
+            </form>
+        </div>
+        <div>
+        {% if user.is_authenticated %}
+        <li class="nav-item me-2">
+            <a class="nav-link px-2" href="{% url 'profile_edit' %}" title="Profile Settings">
+                <i class="bi bi-person-circle" style="font-size: 26px; color: #ffffff;"></i>
+            </a>
+        </li>
+    {% endif %}
+            </div>
+        <!-- Login / Logout ခလုတ် -->
+        <div>
+            {% if user.is_authenticated %}
+                <form action="{% url 'logout' %}" method="post" style="display: inline; margin: 0;">
+                    {% csrf_token %}
+                    <!-- အကောင့်ထွက်ရန် (Logout) - ပုံစံ (၁) -->
+                    <button type="submit" class="btn text-white rounded-2 d-flex" style="font-size: 13px; padding: 4px 10px; background: none; border:none;" title="အကောင့်ထွက်ရန်">
+                        <i class="bi bi-box-arrow-right" style="font-size: 26px;"></i>
+                    </button>
+                </form>
+            {% else %}
+                <!-- အကောင့်ဝင်ရန် (Login) - ပုံစံ (၁) -->
+                <a href="{% url 'login' %}" class="btn btn-sm btn-outline-dark" style="font-size: 13px; padding: 4px 10px; text-decoration: none;" title="အကောင့်ဝင်ရန်">
+                    <i class="bi bi-person-circle"></i>
+                </a>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+    <!-- ပင်မအချက်အလက်များနှင့် ဇယားကွက်ဧရိယာ -->
+    <div class="main-content" style="padding: 15px; margin-top: 10px; box-sizing: border-box;">
+
+        <!-- Admin (Staff) ခလုတ်များ -->
+        {% if user.is_authenticated and user.is_staff %}
+            <p style="margin-top: 0; margin-bottom: 15px;">
+                <a href="{% url 'unit_add' %}?cat={{ current_category }}" class="btn btn-success">+အသစ်ထည့်ရန်</a>
+                <a href="{% url 'unit_clear' %}" class="btn btn-danger" onclick="return confirm('သေချာပါသလား?')">အားလုံးဖျက်မည်</a>
+                <a href="{% url 'admin:index' %}" class="btn" style="background: #8e44ad;">Admin စာမျက်နှာသို့</a>
+            </p>
+        {% endif %}
+
+
+        <!-- Search လုပ်ထားမှ သို့မဟုတ် Sidebar ကိုနှိပ်မှသာ ဇယားပေါ်လာစေရန် -->
+        {% if request.GET.q or request.GET.cat %}
+       <h4 style="margin-top: 10px; margin-bottom: 5px; font-size: 16px; font-weight: bold; color: #3c4043;">{{ page_title }}</h4
+            <!-- ဇယားအမျိုးအစား တစ်ခုချင်းစီ အစဉ်လိုက် ပြောင်းရန် ခလုတ်များ -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; margin-bottom: 15px;">
+
+        <div>
+            {% if prev_category %}
+                <a href="?cat={{ prev_category }}" class="btn btn-sm btn-secondary">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            {% endif %}
+        </div>
+
+        <div>
+            {% if next_category %}
+                <a href="?cat={{ next_category }}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+
+        <div class="table-responsive w-100 m-0 p-0" style="margin-top: 3px">
+            <table class="table table-striped table-hover align-middle bg-white">
+                <thead style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 10;">
+                    <tr>
+                    <th>စဉ်</th>
+
+                    <!-- 💡 ဤနေရာ (Badge မပြခင် သိုမဟုတ် အစဆုံး) တွင် Search လုပ်ထားလျှင် တပ်ရင်း Column များပြရန် ဦးစားပေး စစ်ဆေးပါ -->
+                    {% if is_search or sub_units %}
+                         {% if current_category == 'HQ' or current_category == 'Division' or current_category == 'SKK' or current_category == 'ArmsHQ' or current_category == 'Training' %}
+                        <th>တံဆိပ်</th>
+                        {% endif %}
+                        <th>တပ်ရင်းအမည်</th>
+
+                        <th>တည်နေရာ</th>
+                        <th>ကွပ်ကဲမှု</th>
+                        {% if is_search or current_category == 'Artillery' or current_category == 'Armored' or current_category == 'Signals' or current_category == 'Training'  %}
+                        <th>တိုင်းစစ်ဌာနချုပ် </th>
+                        {% endif %}
+                    {% else %}
+                        <!-- မူလ ကွပ်ကဲမှု Category တွေအတွက် Column များ -->
+                        {% if current_category == 'HQ' or current_category == 'Division' or current_category == 'SKK' or current_category == 'ArmsHQ' or current_category == 'Training' %}
+                        <th>Badge</th>
+                        {% endif %}
+                <th>
+                    {% if current_category == 'HQ' %}တိုင်းစစ်ဌာနချုပ်{% endif %}
+                    {% if current_category == 'Division' %}တပ်မဌာနချုပ်{% endif %}
+                    {% if current_category == 'SKK' %}စကခ{% endif %}
+                    {% if current_category == 'ArmsHQ' %}အမည်{% endif %}
+                    {% if current_category != 'ArmsHQ' and current_category != 'HQ' and current_category != 'Division' and current_category != 'SKK' %}တပ်ရင်း{% endif %}
+                </th>
+                        <th>တည်နေရာ</th>
+                <th>
+                    {% if current_category == 'HQ' %}ကွပ်ကဲမှု{% endif %}
+                    {% if current_category == 'Division' %}တိုင်းစစ်ဌာနချုပ်{% endif %}
+                    {% if current_category == 'SKK' %}တိုင်းစစ်ဌာနချုပ်{% endif %}
+                    {% if current_category != 'HQ' and current_category != 'Division' and current_category != 'SKK' %}ကွပ်ကဲမှု{% endif %}
+                </th>
+
+                        {% if current_category == 'Artillery' or current_category == 'Armored' or current_category == 'Signals'  or current_category == 'Training' %}
+                        <th>တိုင်းစစ်ဌာနချုပ် </th>
+                        {% endif %}
+
+
+                    {% endif %}
+
+                    {% if user.is_authenticated and user.is_staff %}
+                    <th>လုပ်ဆောင်ချက်</th>
+                    {% endif %}
+                </tr>
+                </thead>
+                <tbody>
+
+        <!-- 💡 ၁။ Search လုပ်ထားစဉ် (သို့မဟုတ် sub_units ရှိနေစဉ်) ပြမည့် Data များ -->
+        {% if is_search %}
+            {% if sub_units %}
+            {% for unit in page_obj %}
+            <tr>
+               <!-- စာမျက်နှာပြောင်းသွားသော်လည်း နံပါတ်စဉ် ဆက်တိုက်သွားစေရန် -->
+<td>{{ page_obj.start_index|add:forloop.counter0|to_myanmar_num }}</td>
+ {% if current_category == 'HQ' or current_category == 'Division' or current_category == 'SKK' or current_category == 'ArmsHQ' or current_category == 'Training' %}
+                    <td>
+                        {% if unit.badge %}
+                            <img src="{{ unit.badge.url }}" alt="Badge" width="35" height="35" class="rounded-circle">
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                {% endif %}
+                <!-- ခြေလျင်/ခြေမြန်/တပ်ရင်းများအတွက် unit_name ကိုသာ တိုက်ရိုက်သုံးရန် (Error မတက်စေရန်) -->
+                <td>{{ unit.unit_name }}</td>
+
+                <td>{{ unit.location }}</td>
+                <td>{{ unit.superior_command|default:"-" }}</td>
+                 {% if is_search or current_category == 'Artillery' or current_category == 'Armored' or current_category == 'Signals'  or current_category == 'Training' %}
+                              <td>{{ unit.command_hq|default:"-" }}  </td>
+                 {% endif %}
+
+                {% if user.is_authenticated and user.is_staff %}
+                <td>
+                    <a href="{% url 'unit_update' unit.pk %}?cat={{ current_category }}" class="btn btn-sm btn-warning">ပြင်ဆင်ချက်</a>
+                     <a href="{% url 'unit_delete' unit.pk %}?cat={{ current_category }}" class="btn btn-sm btn-danger" onclick="return confirm('ဖျက်မှာ သေချာပါသလား?');">ဖျက်ရန်</a>
+                </td>
+                {% endif %}
+            </tr>
+             {% endfor %}
+             {% else %}
+                <tr>
+                    <td colspan="5" style="text-align: center;">ရှာဖွေတွေ့ရှိသော အချက်အလက် မရှိပါ။</td>
+                </tr>
+             {% endif %}
+
+        {% else %}
+            <!-- 💡 ၂။ ပုံမှန် Category ဝင်ကြည့်သည့်အခါပြမည့် Data များ -->
+            {% for unit in page_obj %}
+            <tr>
+               <!-- စာမျက်နှာပြောင်းသွားသော်လည်း နံပါတ်စဉ် ဆက်တိုက်သွားစေရန် -->
+<td>{{ page_obj.start_index|add:forloop.counter0|to_myanmar_num }}</td>
+
+               <!-- တိုင်း၊ တပ်မ၊ စကခ တို့တွင်သာ Badge ကော်လံပါမည် -->
+                {% if current_category == 'ArmsHQ' or current_category == 'HQ' or current_category == 'Division' or current_category == 'SKK'  or current_category == 'Training' %}
+                    <td>
+                        {% if unit.badge %}
+                            <img src="{{ unit.badge.url }}" alt="Badge" width="35" height="35" class="rounded-circle">
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                {% endif %}
+
+               <td>
+            {% if current_category == 'ArmsHQ' or current_category == 'HQ' or current_category == 'Division' or current_category == 'SKK' %}
+                <!-- 💡 Model တစ်ခုချင်းစီအလိုက် ပါရှိသော Field နာမည်ကို စစ်ဆေးပြီး ယူခြင်း -->
+                {% if unit.arm_name %}
+                    {% with name=unit.arm_name %}
+                        {% if "ကကမ" in name or "အမြောက်တပ်ဖွဲ့" in name %}
+                            <a href="?cat=Artillery&q=ကကမ" class="text-decoration-none">{{ name|linebreaksbr }}</a>
+                        {% elif "ကကသံ" in name %}
+                            <a href="?cat=Armored&q=ကကသံ" class="text-decoration-none">{{ name|linebreaksbr }}</a>
+                        {% elif "ကကဆက်" in name %}
+                            <a href="?cat=Signals&q=ကကဆက်" class="text-decoration-none">{{ name|linebreaksbr }}</a>
+                        {% elif "လကခ" in name %}
+                            <a href="?cat=Training&q=လကခ" class="text-decoration-none">{{ name|linebreaksbr }}</a>
+                         {% else %}
+                            <a href="?q={{ name }}" class="text-decoration-none">{{ name|linebreaksbr }}</a>
+                        {% endif %}
+                    {% endwith %}
+                {% elif unit.command_name %}
+                    {% with name=unit.command_name %}
+                        {% if "ကကမ" in name or "အမြောက်တပ်ဖွဲ့" in name %}
+                            <a href="?cat=Artillery&q=အမြောက်တပ်ဖွဲ့" class="text-decoration-none">{{ name|linebreaksbr }}</a>
+                        {% elif "လကခ" in name or "အမြောက်တပ်ဖွဲ့" in name %}
+                            <a href="?cat=Training&q=" class="text-decoration-none">{{ name|linebreaksbr }}</a>
+                        {% else %}
+                            <a href="?q={{ name }}" class="text-decoration-none">{{ name|linebreaksbr }}</a>
+                        {% endif %}
+                    {% endwith %}
+                {% elif unit.unit_name %}
+                    {% with name=unit.unit_name %}
+                        {% if "ကကမ" in name or "အမြောက်တပ်ဖွဲ့" in name %}
+                            <a href="?cat=Artillery&q=အမြောက်တပ်ဖွဲ့" class="text-decoration-none">{{ name|linebreaksbr }}</a>
+                        {% else %}
+                            <a href="?q={{ name }}" class="text-decoration-none">{{ name|linebreaksbr }}</a>
+                        {% endif %}
+                    {% endwith %}
+                {% endif %}
+            {% else %}
+                <!-- ခြေလျင်၊ ခြေမြန် များအတွက် -->
+                {{ unit.unit_name|linebreaksbr }}
+            {% endif %}
+        </td>
+
+                <td>{{ unit.location }}</td>
+
+                <td>{{ unit.superior_command }}</td>
+
+                     {% if current_category == 'Artillery' or current_category == 'Armored' or current_category == 'Signals' or current_category == 'Training' %}
+                              <td>{{ unit.command_hq }}  </td>
+                     {% endif %}
+
+                {% if user.is_authenticated and user.is_staff %}
+                <td>
+                     <a href="{% url 'unit_update' unit.pk %}?cat={{ current_category }}" class="btn btn-sm btn-warning">ပြင်ဆင်ချက်</a>
+                     <a href="{% url 'unit_delete' unit.pk %}?cat={{ current_category }}" class="btn btn-sm btn-danger" onclick="return confirm('ဖျက်မှာ သေချာပါသလား?');">ဖျက်ရန်</a>
+                </td>
+                {% endif %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align: center;">ရှာဖွေတွေ့ရှိသော အချက်အလက် မရှိပါ။</td>
+            </tr>
+            {% endfor %}
+        {% endif %}
+    </tbody>
+            </table>
+          <!-- စာမျက်နှာပြောင်းရန် ခလုတ်များ (Icons များသာ သုံးခြင်း) -->
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 30px; gap: 5px; flex-wrap: nowrap;">
+
+        <!-- ဘယ်ဘက်ခြမ်း: ပထမဆုံး နှင့် ရှေ့သို့ (Icon များ) -->
+        <div style="display: flex; gap: 4px; white-space: nowrap;">
+            {% if page_obj.has_previous %}
+                <a href="?cat={{ current_category }}&q={{ query }}&page=1" class="btn btn-sm btn-secondary" title="ပထမဆုံးစာမျက်နှာ" style="padding: 5px 10px; font-size: 14px;"><i class="bi bi-chevron-double-left"></i></a>
+                <a href="?cat={{ current_category }}&q={{ query }}&page={{ page_obj.previous_page_number }}" class="btn btn-sm btn-primary" title="ရှေ့သို့" style="padding: 5px 10px; font-size: 14px;"><i class="bi bi-chevron-left"></i></a>
+            {% endif %}
+        </div>
+
+        <!-- အလယ်: စာမျက်နှာ အခြေအနေပြရန် -->
+        <div style="text-align: center; font-weight: bold; color: #3c4043; font-size: 13px; white-space: nowrap;">
+            Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+        </div>
+
+        <!-- ညာဘက်ခြမ်း: နောက်သို့ နှင့် နောက်ဆုံး (Icon များ) -->
+        <div style="display: flex; gap: 4px; white-space: nowrap; justify-content: flex-end;">
+            {% if page_obj.has_next %}
+                <a href="?cat={{ current_category }}&q={{ query }}&page={{ page_obj.next_page_number }}" class="btn btn-sm btn-primary" title="နောက်သို့" style="padding: 5px 10px; font-size: 14px;"><i class="bi bi-chevron-right"></i></a>
+                <a href="?cat={{ current_category }}&q={{ query }}&page={{ page_obj.paginator.num_pages }}" class="btn btn-sm btn-secondary" title="နောက်ဆုံးစာမျက်နှာ" style="padding: 5px 10px; font-size: 14px;"><i class="bi bi-chevron-double-right"></i></a>
+            {% endif %}
+        </div>
+
+    </div>
+    {% endif %}
+        {% else %}
+
+<!-- Welcome Section -->
+<div class="welcome-section" style="background: #ffffff; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e0e0e0;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+        <div>
+            <h2 style="margin: 0 0 5px 0; font-size: 22px; color: #333;">တပ်ဖွဲ့အချက်အလက် စီမံခန့်ခွဲမှုစနစ်</h2>
+            <p style="margin: 0; color: #666; font-size: 14px;">
+                မင်္ဂလာပါ <strong>{{ request.user.username }}</strong>! - စနစ်မှ ကြိုဆိုပါတယ်။
+                <span style="display: block; margin-top: 4px; color: #888; font-size: 13px;">
+                    💡 အကြံပြုချက် - အထက်ပါ Search Bar မှဖြစ်စေ၊ ဘယ်ဘက် Sidebar မှဖြစ်စေ ရွေးချယ်၍ ရှာဖွေနိုင်ပါသည်။<br>
+                        Search Bar တွင် တပ်ရင်း၊ တည်နေရာ၊ ကွပ်ကဲမှု စသည်ဖြင့် ရိုက်ရှာနိုင်ပါသည်။ ဥပမာ- ခလရ ၁/ခမရ ၁/အမတ ၁၊ ပြင်ဦးလွင်၊ လပခ/တမခ ၁၁/စကခ ၁/ကကမ/လကခ
+                </span>
+            </p>
+        </div>
+
+    </div>
+</div>
+
+
+
+   <!-- Dashboard Statistics Cards Section -->
+<div class="stats-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px;">
+
+    <!-- 1. စုစုပေါင်း တပ်ဖွဲ့ -->
+    <div class="stat-card" style="background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e0e0e0; border-left: 4px solid #007bff;">
+        <h3 style="margin: 0 0 8px 0; font-size: 14px; color: #666; font-weight: normal;">စုစုပေါင်း တပ်ဖွဲ့</h3>
+        <p style="margin: 0; font-size: 24px; font-weight: bold; color: #333;">{{ total_units|default:"0"|to_myanmar_num }}</p>
+    </div>
+
+    <!-- 2. တိုင်းစစ်ဌာနချုပ်များ (HQ) -->
+    <a href="?cat=HQ" style="text-decoration: none; display: block;">
+        <div class="stat-card" style="background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e0e0e0; border-left: 4px solid #28a745; height: 100%; box-sizing: border-box;">
+            <h3 style="margin: 0 0 8px 0; font-size: 14px; color: #666; font-weight: normal;">တိုင်းစစ်ဌာနချုပ်များ</h3>
+            <p style="margin: 0; font-size: 24px; font-weight: bold; color: #28a745;">{{ HQ_count|default:"0"|to_myanmar_num }}</p>
+        </div>
+    </a>
+
+    <!-- 3. တမခ များ -->
+    <a href="?cat=Division" style="text-decoration: none; display: block;">
+        <div class="stat-card" style="background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e0e0e0; border-left: 4px solid #ffc107; height: 100%; box-sizing: border-box;">
+            <h3 style="margin: 0 0 8px 0; font-size: 14px; color: #666; font-weight: normal;">တပ်မဌာနချုပ်များ (တမခ)</h3>
+            <p style="margin: 0; font-size: 24px; font-weight: bold; color: #d39e00;">{{ Division_count|default:"0"|to_myanmar_num }}</p>
+        </div>
+    </a>
+
+    <!-- 4. စကခ များ -->
+    <a href="?cat=SKK" style="text-decoration: none; display: block;">
+        <div class="stat-card" style="background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e0e0e0; border-left: 4px solid #17a2b8; height: 100%; box-sizing: border-box;">
+            <h3 style="margin: 0 0 8px 0; font-size: 14px; color: #666; font-weight: normal;">စစ်ဆင်ရေးကွပ်ကဲမှုဌာနချုပ်များ(စကခ)</h3>
+            <p style="margin: 0; font-size: 24px; font-weight: bold; color: #17a2b8;">{{ SKK_count|default:"0"|to_myanmar_num }}</p>
+        </div>
+    </a>
+
+    <!-- 5. ခြေလျင်တပ်ရင်းများ -->
+    <a href="?cat=Infantry" style="text-decoration: none; display: block;">
+        <div class="stat-card" style="background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e0e0e0; border-left: 4px solid #6c757d; height: 100%; box-sizing: border-box;">
+            <h3 style="margin: 0 0 8px 0; font-size: 14px; color: #666; font-weight: normal;">ခြေလျင်တပ်ရင်းများ</h3>
+            <p style="margin: 0; font-size: 24px; font-weight: bold; color: #333;">{{ Infantry_count|default:"0"|to_myanmar_num }}</p>
+        </div>
+    </a>
+
+    <!-- 6. ခြေမြန်တပ်ရင်းများ -->
+    <a href="?cat=LightInfantry" style="text-decoration: none; display: block;">
+        <div class="stat-card" style="background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e0e0e0; border-left: 4px solid #fd7e14; height: 100%; box-sizing: border-box;">
+            <h3 style="margin: 0 0 8px 0; font-size: 14px; color: #666; font-weight: normal;">ခြေမြန်တပ်ရင်းများ</h3>
+            <p style="margin: 0; font-size: 24px; font-weight: bold; color: #fd7e14;">{{ LightInfantry_count|default:"0"|to_myanmar_num }}</p>
+        </div>
+    </a>
+
+    <!-- 7. ညွှန်ကြားရေးမှူးရုံးများ -->
+    <a href="?cat=ArmsHQ" style="text-decoration: none; display: block;">
+        <div class="stat-card" style="background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e0e0e0; border-left: 4px solid #e83e8c; height: 100%; box-sizing: border-box;">
+            <h3 style="margin: 0 0 8px 0; font-size: 14px; color: #666; font-weight: normal;">အရာရှိချုပ်ရုံးများ/ညွှန်ကြားရေးမှူးရုံးများ</h3>
+            <p style="margin: 0; font-size: 24px; font-weight: bold; color: #e83e8c;">{{ ArmsHQ_count|default:"0"|to_myanmar_num }}</p>
+        </div>
+    </a>
+
+    <!-- 8. အမြောက်တပ်ဖွဲ့ -->
+    <a href="?cat=Artillery" style="text-decoration: none; display: block;">
+        <div class="stat-card" style="background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e0e0e0; border-left: 4px solid #6610f2; height: 100%; box-sizing: border-box;">
+            <h3 style="margin: 0 0 8px 0; font-size: 14px; color: #666; font-weight: normal;">အမြောက်တပ်ဖွဲများ</h3>
+            <p style="margin: 0; font-size: 24px; font-weight: bold; color: #6610f2;">{{ Artillery_count|default:"0"|to_myanmar_num }}</p>
+        </div>
+    </a>
+
+    <!-- 9. သံချပ်ကာတပ်ဖွဲ့ -->
+    <a href="?cat=Armored" style="text-decoration: none; display: block;">
+        <div class="stat-card" style="background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e0e0e0; border-left: 4px solid #343a40; height: 100%; box-sizing: border-box;">
+            <h3 style="margin: 0 0 8px 0; font-size: 14px; color: #666; font-weight: normal;">သံချပ်ကာတပ်ဖွဲ့များ</h3>
+            <p style="margin: 0; font-size: 24px; font-weight: bold; color: #343a40;">{{ Armored_count|default:"0"|to_myanmar_num }}</p>
+        </div>
+    </a>
+
+    <!-- 10. ဆက်သွယ်ရေးတပ်ဖွဲ့ -->
+    <a href="?cat=Signals" style="text-decoration: none; display: block;">
+        <div class="stat-card" style="background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e0e0e0; border-left: 4px solid #20c997; height: 100%; box-sizing: border-box;">
+            <h3 style="margin: 0 0 8px 0; font-size: 14px; color: #666; font-weight: normal;">ဆက်သွယ်ရေးတပ်ဖွဲ့များ</h3>
+            <p style="margin: 0; font-size: 24px; font-weight: bold; color: #20c997;">{{ Signals_count|default:"0"|to_myanmar_num }}</p>
+        </div>
+    </a>
+
+    <!-- 11. သင်တန်းကျောင်းများ -->
+    <a href="?cat=Training" style="text-decoration: none; display: block;">
+        <div class="stat-card" style="background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e0e0e0; border-left: 4px solid #6f42c1; height: 100%; box-sizing: border-box;">
+            <h3 style="margin: 0 0 8px 0; font-size: 14px; color: #666; font-weight: normal;">သင်တန်းကျောင်းများ</h3>
+            <p style="margin: 0; font-size: 24px; font-weight: bold; color: #6f42c1;">{{ Training_count|default:"0"|to_myanmar_num }}</p>
+        </div>
+    </a>
+
+</div>
+            {% endif %}
+
+
+ </div>
+    </div>
+    <!-- Footer အပိုင်း -->
+    <footer class="footer" style="padding: 20px 10px; text-align: center; background-color: #2c3e50; color: white; margin-top: 30px; border-top: 1px solid #4e657b;">
+        <div style="max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
+
+            <!-- လိပ်စာ -->
+            <div>
+                <i class="bi bi-geo-alt" style="color: #e74c3c; margin-right: 6px;"></i> Pyin Oo Lwin, Mandalay
+            </div>
+
+            <!-- ဆက်သွယ်ရန် (ဖုန်း နှင့် အီးမေးလ် နှိပ်၍ အသုံးပြုနိုင်ရန် Link များထည့်ခြင်း) -->
+            <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                <!-- ဖုန်းနံပါတ် နှိပ်လျှင် ခေါ်ဆိုရန် -->
+                <span>
+                    <a href="tel:09252771971" style="color: #2ecc71; text-decoration: none;">
+                        <i class="bi bi-telephone" style="margin-right: 6px;"></i> 09252771971
+                    </a>
+                </span>
+
+                <!-- အီးမေးလ် နှိပ်လျှင် ပို့ရန် -->
+                <span>
+                    <a href="mailto:admin@military.gov.mm" style="color: #3498db; text-decoration: none;">
+                        <i class="bi bi-envelope" style="margin-right: 6px;"></i> kyawhtay33516@gmail.com
+                    </a>
+                </span>
+            </div>
+
+            <!-- Copyright -->
+            <div style="margin-top: 5px; font-size: 12px; color: #95a5a6; border-top: 1px solid #34495e; padding-top: 8px;">
+                &copy; 2026 Military Unit Management System. All rights reserved.
+            </div>
+
+        </div>
+    </footer>
+
+
+
+    <!-- JavaScript ဖိုင်လုပ်ဆောင်ချက်များ -->
+    <script>
+    function openSidebar() {
+        document.getElementById("mySidebar").style.width = "260px";
+    }
+
+    function closeSidebar() {
+        document.getElementById("mySidebar").style.width = "0";
+    }
+    </script>
+    <script>
+    function toggleSearch() {
+        const container = document.getElementById('searchContainer');
+        const clearBtn = document.getElementById('clearBtn');
+        const inputField = document.getElementById('searchInput');
+
+        container.classList.toggle('active');
+
+        if (container.classList.contains('active')) {
+            inputField.focus();
+            clearBtn.style.display = 'block'; // ဘောက်စ်ပွင့်လာလျှင် X ပြမည်
+        } else {
+            clearBtn.style.display = 'none';
+        }
+    }
+
+    function clearSearch() {
+        const container = document.getElementById('searchContainer');
+        const inputField = document.getElementById('searchInput');
+        const clearBtn = document.getElementById('clearBtn');
+
+        inputField.value = ''; // ရှာထားသော စာများကို ဖျက်မည်
+        container.classList.remove('active'); // Search ဘောက်စ်ကို ပြန်သိမ်းမည်
+        clearBtn.style.display = 'none';
+    }
+</script>
+
+
+
+</body>
+</html>
