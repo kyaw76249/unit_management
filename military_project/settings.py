@@ -95,4 +95,4 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Login ဝင်ပြီးပါက သင့်ရဲ့ ပင်မစာမျက်နှာ (unit_list) သို့ တိုက်ရိုက်သွားရန်
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/Login/'
-#STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
