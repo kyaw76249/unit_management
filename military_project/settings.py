@@ -10,7 +10,8 @@ SECRET_KEY = 'django-insecure-your-secret-key-here'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['kyawhtay33516.pythonanywhere.com','127.0.0.1','localhost']
+INSTALLED_APPS = []
 
 
 # Application definition
@@ -57,18 +58,10 @@ WSGI_APPLICATION = 'military_project.wsgi.application'
 # Database ချိတ်ဆက်မှု (MySQL)
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'military_db',  # ကိုယ့်ရဲ့ Database နာမည်
-        'USER': 'root',  # Database Username
-        'PASSWORD': '1111',  # Database Password
-        'HOST': 'localhost',
-        'PORT': '3306',
-        'OPTION':{
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -102,4 +95,4 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Login ဝင်ပြီးပါက သင့်ရဲ့ ပင်မစာမျက်နှာ (unit_list) သို့ တိုက်ရိုက်သွားရန်
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/Login/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+#STATIC_ROOT = BASE_DIR / 'staticfiles'
