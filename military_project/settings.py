@@ -8,10 +8,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-your-secret-key-here'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['192.168.18.88','localhost','127.0.0.1']
-INSTALLED_APPS = []
+ALLOWED_HOSTS = ['*']
+
 
 # Application definition
 INSTALLED_APPS = [
@@ -102,3 +102,4 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Login ဝင်ပြီးပါက သင့်ရဲ့ ပင်မစာမျက်နှာ (unit_list) သို့ တိုက်ရိုက်သွားရန်
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/Login/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'

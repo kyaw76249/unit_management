@@ -1,0 +1,1 @@
+web: gunicorn military_project.wsgi:application
