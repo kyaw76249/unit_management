@@ -3,105 +3,217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile Settings - Military Unit System</title>
-    <!-- Bootstrap 5 CSS CDN -->
+    <title>Profile ပြင်ဆင်ရန်</title>
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons CDN -->
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
-    /* မျက်နှာပြင်တစ်ခုလုံးကို နေရာသေချာသတ်မှတ်ပြီး မရွေ့အောင် ထိန်းချုပ်ခြင်း */
-    html, body {
-        height: 100vh;
-        overflow: hidden; /* အောက်သို့ scroll ဆွဲ၍မရအောင် ပိတ်ထားခြင်း */
-        margin: 0;
-    }
-    .fixed-container {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 100%;
-        max-width: 500px; /* လိုအပ်သော Form အရွယ်အစား */
-    }
-</style>
+        html, body {
+            width: 100%;
+            min-height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        .form-container-wrapper {
+            width: 100%;
+            padding: 20px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        @media (min-width: 992px) {
+            .form-container-wrapper {
+                max-width: 600px;
+                margin: 20px auto;
+            }
+        }
+        /* Google Profile Card ပုံစံ */
+        .google-card {
+            width: 100%;
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            background-color: #ffffff;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 12px !important;
+        }
+        .form-group label {
+            font-weight: 600;
+            font-size: 13px;
+            color: #495057;
+            margin-bottom: 4px;
+        }
+    </style>
 </head>
-<body class="bg-light d-flex flex-column min-vh-100">
+<body>
 
-<nav class="navbar navbar-dark  py-1 px-2" style="background_color: transparent;">
-        <div class="container-fluid">
-            <a href="{% url 'unit_list' %}" class="btn btn-primary rounded-2 d-flex align-items-center justify-content-center text-white px-3 py-2" title="နောက်သို">
-            <i class="bi bi-chevron-left me-1" style="font-size: 15px;"></i>
-        </a>
-            <!-- အလယ်တည့်တည့်တွင် ရှိမည့် Profile စာသား -->
+    <div class="form-container-wrapper">
+        <div class="w-100">
 
-        </div>
-    </nav>
-    <!-- Main Content -->
-    <main class="container d-flex align-items-center justify-content-center  flex-grow-1" style="min-height: 100vh" >
-        <div class="row justify-content-center w-100">
-            <div class="col-12 col-md-6 col-lg-5">
-               <div class="fixed-container px-3">
-                <div class="card shadow-sm border-0">
-                    <div class="card-body p-4 text-center">
-                         <h2 class="mb-4 text-center">User Account</h2>
-                        <!-- 👤 ဝင်ထားတဲ့ အကောင့်ပိုင်ရှင် (Username) ကို ကြီးမားစွာပြသခြင်း -->
-                        <div class="mb-4">
-                            <i class="bi bi-person-circle text-primary" style="font-size: 64px;"></i>
-                            <h4 class="mt-2 mb-0 fw-bold text-dark">{{ request.user.username }}</h4>
-                            <p class="text-muted small"></p>
-                        </div>
-
-                        {% if messages %}
-                            {% for message in messages %}
-                                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                    {{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-
-                        <!-- ၁။ Username ပြောင်းရန် Form -->
-
-                        <form method="POST" class="text-start mb-4">
-                            {% csrf_token %}
-                            <div class="mb-3">
-                                <label class="form-label fw-bold"> Change Username </label>
-                                <input type="text" name="username" value="{{ request.user.username }}" class="form-control" required>
-                            </div>
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary py-2">OK</button>
-                            </div>
-                        </form>
-
-                        <hr class="my-4">
-
-                        <!-- ၂။ Password ပြောင်းရန် ခလုတ် -->
-                        <div class="d-grid mb-3">
-                            <a href="{% url 'password_change' %}" class="btn btn-outline-secondary py-2">
-                                <i class="bi bi-key me-1"></i> Change Password
-                            </a>
-                        </div>
-
-                        <!-- ၃။ Logout (ထွက်ရန်) ခလုတ် -->
-                        <div class="d-grid">
-                            <form action="{% url 'logout' %}" method="post">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-primary w-100 py-2" >
-                                    <i class="bi bi-box-arrow-right me-1"></i> Logout
-                                </button>
-                            </form>
-                        </div>
-                        </div>
+            <!-- ၁။ Google Profile Header Card (အပေါ်ဆုံးတွင် ပုံနှင့် အမည်ပေါ်ရန်) -->
+            <div class="google-card text-center">
+                <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 75px; height: 75px;">
+                    <i class="bi bi-person-fill fs-1 text-primary"></i>
                 </div>
+                <!-- User ၏ အမည် သို့မဟုတ် Rank ကို ဦးစားပေးပြသခြင်း -->
+                <h5 class="fw-bold mb-1 text-dark">
+                    {% if request.user.userprofile.name %}
+                        {{ request.user.userprofile.name }}
+                    {% else %}
+                        {{ request.user.username }}
+                    {% endif %}
+                </h5>
+                <p class="text-muted small mb-0">
+
+                    @{{ request.user.username }}
+                </p>
             </div>
+
+            {% if messages %}
+                <div class="mb-3">
+                    {% for message in messages %}
+                        <div class="alert alert-success py-2 small mb-1" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- ၂။ ကိုယ်ရေးအချက်အလက်နှင့် Username ပြင်ဆင်ရန် Form Card -->
+            <div class="google-card">
+                <h6 class="fw-bold mb-3 text-secondary border-bottom pb-2">
+                    <i class="bi bi-person-gear me-2"></i> ကိုယ်ရေးအချက်အလက်များ
+                </h6>
+                <form method="POST">
+                   {% csrf_token %}
+
+                    <!-- Username -->
+                    <div class="form-group mb-2">
+                        <label>Username</label>
+                        {{ username_form.username }}
+                        {{ username_form.username.errors }}
+                    </div>
+
+                    <!-- ပြန်တမ်းဝင်အမှတ် -->
+                    <div class="form-group mb-2">
+                        <label>ပြန်တမ်းဝင်အမှတ်</label>
+                        {{ profile_form.bc_no }}
+                        {{ profile_form.bc_no.errors }}
+                    </div>
+
+                    <!-- အဆင့် (Rank) -->
+                    <div class="form-group mb-2">
+                        <label>အဆင့်</label>
+                        {{ profile_form.rank }}
+                        {{ profile_form.rank.errors }}
+                    </div>
+
+                    <!-- အမည် (Name) - အဆင့်၏နောက်တွင် ရှိမည် -->
+                    <div class="form-group mb-2">
+                        <label>အမည်</label>
+                        {{ profile_form.name }}
+                        {{ profile_form.name.errors }}
+                    </div>
+
+                                       <!-- တပ် -->
+                    <div class="form-group mb-2">
+                        <label>တပ်</label>
+                        {{ profile_form.unit }}
+                        {{ profile_form.unit.errors }}
+                    </div>
+
+                    <!-- တည်နေရာ -->
+                    <div class="form-group mb-2">
+                        <label>တည်နေရာ</label>
+                        {{ profile_form.location }}
+                        {{ profile_form.location.errors }}
+                    </div>
+                                        <!-- ကွပ်ကဲမှု -->
+                    <div class="form-group mb-2">
+                        <label>ကွပ်ကဲမှု</label>
+                        {{ profile_form.command }}
+                        {{ profile_form.command.errors }}
+                    </div>
+
+                    <!-- တိုင်းစစ်ဌာနချုပ် -->
+                    <div class="form-group mb-2">
+                        <label>တိုင်းစစ်ဌာနချုပ်</label>
+                        {{ profile_form.military_command }}
+                        {{ profile_form.military_command.errors }}
+                    </div>
+
+                    <!-- ဖုန်းနံပါတ် -->
+                    <div class="form-group mb-2">
+                        <label>ဖုန်းနံပါတ်</label>
+                        {{ profile_form.phone_number }}
+                        {{ profile_form.phone_number.errors }}
+                    </div>
+
+                    <!-- နေရပ်လိပ်စာ -->
+                    <div class="form-group mb-3">
+                        <label>နေရပ်လိပ်စာ</label>
+                        {{ profile_form.address }}
+                        {{ profile_form.address.errors }}
+                    </div>
+
+                    <button type="submit" name="update_profile" class="btn btn-primary w-100 py-2 mt-2 fw-bold">အချက်အလက်များ သိမ်းမည်</button>
+                </form>
+            </div>
+
+         <!-- ၃။ Password ချိန်းရန် Form Card (Icon ခလုတ်ဖြင့် ဖွင့်ပိတ်ရန်) -->
+<div class="google-card">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h6 class="fw-bold mb-1 text-secondary">
+                <i class="bi bi-shield-lock me-2"></i> စကားဝှက် (Password) ပြင်ဆင်ရန်
+            </h6>
+
         </div>
-            </div>
-    </main>
+        <!-- စာသားအစား Icon ဖြင့် အစားထိုးထားသော ခလုတ် -->
+        <button class="btn btn-outline-primary btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;" type="button" data-bs-toggle="collapse" data-bs-target="#passwordCollapse" aria-expanded="false" aria-controls="passwordCollapse" title="Password ပြောင်းရန်">
+            <i class="bi bi-pencil-square fs-6"></i>
+        </button>
+    </div>
 
+    <!-- နှိပ်မှ ပေါ်လာမည့် Collapse အပိုင်း -->
+    <div class="collapse mt-3" id="passwordCollapse">
+        <div class="card card-body border-0 bg-light p-3 rounded-3">
+            <form method="POST">
+                {% csrf_token %}
+                {{ password_form.as_p }}
 
+                <button type="submit" name="change_password" class="btn btn-dark w-100 py-2 mt-2 fw-bold text-white">Password ပြောင်းမည်</button>
+            </form>
+        </div>
+    </div>
+</div>
+            <div class="d-grid gap-2 mt-4">
+    <!-- Home သို့သွားရန် သပ်ရပ်လှပသော Outline ခလုတ် -->
+    <a href="{% url 'unit_list' %}" class="btn btn-outline-primary rounded-pill py-2 fw-bold shadow-sm">
+        <i class="bi bi-house-door-fill me-2"></i> ပင်မစာမျက်နှာ (Home) သို့ သွားရန်
+    </a>
+</div>
 
+        </div>
+    </div>
 
-    <!-- Bootstrap 5 JS Bundle CDN -->
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Password form ထဲက field တွေကို bootstrap class ထည့်ပေးရန်
+        window.addEventListener('DOMContentLoaded', () => {
+            const pwdInputs = document.querySelectorAll('#id_old_password, #id_new_password1, #id_new_password2');
+            pwdInputs.forEach(input => {
+                if (!input.classList.contains('form-control')) {
+                    input.classList.add('form-control');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

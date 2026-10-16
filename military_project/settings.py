@@ -8,10 +8,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-your-secret-key-here'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['kyawhtay33516.pythonanywhere.com','127.0.0.1','localhost']
+ALLOWED_HOSTS = ['192.168.100.23','127.0.0.1','localhost']
 INSTALLED_APPS = []
+# settings.py ထဲတွင် ဤလိုင်းများကို ထည့်ပါ
+CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+]
 
 
 # Application definition

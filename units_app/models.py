@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # ၁။ ကွပ်ကဲမှုဌာနချုပ် (HQ)
 class UnitsCommandHq(models.Model):
@@ -130,6 +131,8 @@ class UnitsSignals(models.Model):
         db_table = 'units_signals'
 
 
+
+
 class UnitsTraining(models.Model):
     id = models.AutoField(primary_key=True)
     badge = models.ImageField(upload_to='badges/', null=True, blank=True)
@@ -145,4 +148,21 @@ class UnitsTraining(models.Model):
         verbose_name = "သင်တန်းကျောင်း"
         verbose_name_plural = "သင်တန်းကျောင်းများ"
         db_table = 'units_training'
+
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    bc_no = models.CharField(max_length=50, blank=True, null=True, verbose_name="ပြန်တမ်းဝင်အမှတ်")
+    rank = models.CharField(max_length=50, blank=True, null=True, verbose_name="အဆင့်")
+    name = models.CharField(max_length=150, blank=True, null=True, verbose_name="အမည်")
+    unit = models.CharField(max_length=150, blank=True, null=True, verbose_name="တပ်")
+    location = models.CharField(max_length=150, blank=True, null=True, verbose_name="တည်နေရာ")
+    command = models.CharField(max_length=150, blank=True, null=True, verbose_name="ကွပ်ကဲမှု")
+    military_command = models.CharField(max_length=150, blank=True, null=True, verbose_name="တိုင်းစစ်ဌာနချုပ်")
+    phone_number = models.CharField(max_length=15, blank=True, null=True, verbose_name="ဖုန်းနံပါတ်")
+    address = models.TextField(blank=True, null=True, verbose_name="နေရပ်လိပ်စာ")
+
+    def __str__(self):
+        return self.user.username
 

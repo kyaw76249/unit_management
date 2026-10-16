@@ -23,3 +23,23 @@ class CustomUserAdmin(UserAdmin):
 # မူလ User အား unregister လုပ်ပြီး CustomAdmin ဖြင့် ပြန်လည် ချိတ်ဆက်ခြင်း
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
+from django.contrib import admin
+from .models import UserProfile
+
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    # Admin စာမျက်နှာတွင် ဇယားကွက်အနေဖြင့် ပြသမည့် ကော်လံများ
+    list_display = ('user', 'bc_no', 'rank', 'name', 'unit', 'location','command','military_command', 'phone_number','get_is_active')
+
+    # ရှာဖွေရန် (Search) အသုံးပြုနိုင်မည့် Field များ
+    search_fields = ('user__username', 'name', 'bc_no', 'rank', 'unit')
+
+    # ဘယ်ဘက်ခြမ်းတွင် အုပ်စုအလိုက် စစ်ထုတ်ရန် (Filter)
+    list_filter = ('rank', 'unit','command', 'military_command')
+
+    def get_is_active(self, obj):
+        return obj.user.is_active
+
+    get_is_active.boolean = True  # အမှန်ခြစ် (Check/Cross) ပုံစံပေါ်စေရန်
+    get_is_active.short_description = 'Active (ဝင်ခွင့်)'  # Admin ဇယားထိပ်တွင် ပေါ်မည့် ခေါင်းစဉ်

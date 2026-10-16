@@ -44,6 +44,7 @@
             justify-content: space-between;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 
+
         }
 
         .menu-btn {
@@ -233,13 +234,11 @@
 
         /* ၅။ Footer စတိုင်လ် */
         .footer {
-            background-color: #2c3e50;
-            color: white;
             text-align: center;
-            padding: 15px 0;
-            font-size: 14px;
             width: 100%;
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+            margin: 0 auto;
+            padding: 15px;
+            box-sizing: border-box;
         }
          .top-navbar li {
         list-style-type: none !important;
@@ -301,6 +300,9 @@
         <div class="sidebar-content">
         <button class="close-btn" onclick="closeSidebar()">&times;</button>
         <h3>တပ်ဖွဲ့များ</h3>
+            <a href="{% url 'profile_list' %}" class="list-group-item list-group-item-action py-2 ripple">
+    <i class="bi bi-people-fill me-2"></i> တပ်ဖွဲ့ဝင်များ စာရင်း
+</a>
         <a href="?cat=HQ">တိုင်းစစ်ဌာနချုပ်များ</a>
         <a href="?cat=Division">တပ်မဌာနချုပ်များ(တမခ)</a>
         <a href="?cat=SKK">စစ်ဆင်ရေးကွပ်ကဲမှုဌာနချုပ်များ(စကခ)</a>
@@ -308,6 +310,7 @@
         <a href="?cat=LightInfantry">ခြေမြန်တပ်ရင်းများ</a>
         <a href="?cat=ArmsHQ">လက်ရုံး/ဝန်ထမ်း</a>
         <a href="?cat=Artillery">အမြောက်တပ်များ</a>
+        <a href="?cat=AntiAircraft">လေကြောင်းရန်ကာကွယ်ရေးတပ်များ</a>
         <a href="?cat=Armored">သံချပ်ကာတပ်များ</a>
 
             <a href="?cat=Signals">ဆက်သွယ်ရေးတပ်များ</a>
@@ -431,7 +434,7 @@
 
                         <th>တည်နေရာ</th>
                         <th>ကွပ်ကဲမှု</th>
-                        {% if is_search or current_category == 'Artillery' or current_category == 'Armored' or current_category == 'Signals' or current_category == 'Training'  %}
+                        {% if is_search or current_category == 'Artillery' or current_category == 'Armored' or current_category == 'Signals' or current_category == 'Training' or current_category == 'AntiAircraft'  %}
                         <th>တိုင်းစစ်ဌာနချုပ် </th>
                         {% endif %}
                     {% else %}
@@ -454,7 +457,7 @@
                     {% if current_category != 'HQ' and current_category != 'Division' and current_category != 'SKK' %}ကွပ်ကဲမှု{% endif %}
                 </th>
 
-                        {% if current_category == 'Artillery' or current_category == 'Armored' or current_category == 'Signals'  or current_category == 'Training' %}
+                        {% if current_category == 'Artillery' or current_category == 'Armored' or current_category == 'Signals'  or current_category == 'Training' or current_category == 'AntiAircraft' %}
                         <th>တိုင်းစစ်ဌာနချုပ် </th>
                         {% endif %}
 
@@ -475,7 +478,7 @@
             <tr>
                <!-- စာမျက်နှာပြောင်းသွားသော်လည်း နံပါတ်စဉ် ဆက်တိုက်သွားစေရန် -->
 <td>{{ page_obj.start_index|add:forloop.counter0|to_myanmar_num }}</td>
- {% if current_category == 'HQ' or current_category == 'Division' or current_category == 'SKK' or current_category == 'ArmsHQ' or current_category == 'Training' %}
+ {% if current_category == 'HQ' or current_category == 'Division' or current_category == 'SKK' or current_category == 'ArmsHQ' or current_category == 'Training' or current_category == 'AntiAircraft' %}
                     <td>
                         {% if unit.badge %}
                             <img src="{{ unit.badge.url }}" alt="Badge" width="35" height="35" class="rounded-circle">
@@ -489,7 +492,7 @@
 
                 <td>{{ unit.location }}</td>
                 <td>{{ unit.superior_command|default:"-" }}</td>
-                 {% if is_search or current_category == 'Artillery' or current_category == 'Armored' or current_category == 'Signals'  or current_category == 'Training' %}
+                 {% if is_search or current_category == 'Artillery' or current_category == 'Armored' or current_category == 'Signals'  or current_category == 'Training' or current_category == 'AntiAircraft' %}
                               <td>{{ unit.command_hq|default:"-" }}  </td>
                  {% endif %}
 
@@ -571,7 +574,7 @@
 
                 <td>{{ unit.superior_command }}</td>
 
-                     {% if current_category == 'Artillery' or current_category == 'Armored' or current_category == 'Signals' or current_category == 'Training' %}
+                     {% if current_category == 'Artillery' or current_category == 'Armored' or current_category == 'Signals' or current_category == 'Training' or current_category == 'AntiAircraft' %}
                               <td>{{ unit.command_hq }}  </td>
                      {% endif %}
 
@@ -625,7 +628,7 @@
         <div>
             <h2 style="margin: 0 0 5px 0; font-size: 22px; color: #333;">တပ်ဖွဲ့အချက်အလက် စီမံခန့်ခွဲမှုစနစ်</h2>
             <p style="margin: 0; color: #666; font-size: 14px;">
-                မင်္ဂလာပါ <strong>{{ request.user.username }}</strong>! - စနစ်မှ ကြိုဆိုပါတယ်။
+                မင်္ဂလာပါ <strong>{{ request.user.userprofile.name }}</strong>! - စနစ်မှ ကြိုဆိုပါတယ်။
                 <span style="display: block; margin-top: 4px; color: #888; font-size: 13px;">
                     💡 အကြံပြုချက် - အထက်ပါ Search Bar မှဖြစ်စေ၊ ဘယ်ဘက် Sidebar မှဖြစ်စေ ရွေးချယ်၍ ရှာဖွေနိုင်ပါသည်။<br>
                         Search Bar တွင် တပ်ရင်း၊ တည်နေရာ၊ ကွပ်ကဲမှု စသည်ဖြင့် ရိုက်ရှာနိုင်ပါသည်။ ဥပမာ- ခလရ ၁/ခမရ ၁/အမတ ၁၊ ပြင်ဦးလွင်၊ လပခ/တမခ ၁၁/စကခ ၁/ကကမ/လကခ

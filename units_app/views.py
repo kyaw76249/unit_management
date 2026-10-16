@@ -11,7 +11,20 @@ from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.core.paginator import Paginator
-from .forms import CustomUserCreationForm
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.forms import AuthenticationForm
+from django.shortcuts import render, redirect
+from django.contrib.auth import login
+from django.contrib.auth.forms import AuthenticationForm
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
+from .forms import UsernameChangeForm, UserProfileForm
+from .models import UserProfile
+
+
 
 # Category အလိုက် Model များကို ချိတ်ဆက်ပေးသော Map
 MODEL_MAP = {
@@ -24,13 +37,32 @@ MODEL_MAP = {
     'Artillery': UnitsArtillery,
     'Armored': UnitsArmored,
     'Signals': UnitsSignals,
+
     'Training': UnitsTraining,
 }
 
+from functools import wraps
+
+def profile_required(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if request.user.is_authenticated:
+            try:
+                profile = request.user.userprofile
+                print(f"User: {request.user.username}, Name: {profile.name}, Rank: {profile.rank}")
+                # အကယ်၍ အမည် (name) သို့မဟုတ် အရေးကြီး အချက်အလက် ကွက်လ่างနေလျှင်
+                if not profile.name or not profile.rank:
+                    messages.warning(request, 'ကျေးဇူးပြု၍ ပထမဦးစွာ ကိုယ်ရေးအချက်အလက်များ ဖြည့်စွက်ပါ။')
+                    return redirect('profile_edit')
+            except UserProfile.DoesNotExist:
+                return redirect('profile_edit')
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
 
 # ၁။ စာရင်းကြည့်ရန်နှင့် ရှာဖွေရန် (List & Search)
 # ၁။ စာရင်းကြည့်ရန်နှင့် ရှာဖွေရန် (List & Search)
 @login_required(login_url='login')
+@profile_required
 def unit_list(request):
     query = request.GET.get('q', '').strip()
     category = request.GET.get('cat', '').strip()
@@ -60,7 +92,7 @@ def unit_list(request):
         else:
             page_title = f"{query} အတွက် ရှာဖွေတွေ့ရှိချက်များ"
 
-        target_keys = ['Infantry', 'LightInfantry','ArmsHQ', 'Artillery', 'Armored', 'Signals', 'Training']
+        target_keys = ['Infantry', 'LightInfantry','ArmsHQ', 'Artillery', 'Armored', 'Signals', 'Training','Antiaircraft']
 
         for mod_key, mod in MODEL_MAP.items():
             if mod_key in target_keys:
@@ -290,56 +322,108 @@ def custom_logout(request):
     logout(request)
     return redirect('/login/')
 
-
 def register_view(request):
     if request.method == 'POST':
-        # 💡 UserCreationForm အစား Custom Form ကို သုံးပါ
-        form = CustomUserCreationForm(request.POST)
+        form = UserCreationForm(request.POST)  # 👈 Built-in UserCreationForm ကို သုံးပါ
         if form.is_valid():
-            user = form.save(commit=False)
-
-            full_name = form.cleaned_data.get('first_name')
-            user.first_name = full_name
-            user.last_name = ''
+            user = form.save(commit=False)# username နဲ့ password ကို အလိုအလျောက် သိမ်းပေးပါမည်
+            user.is_active = False
             user.save()
-
-            # 💡 တကယ်လို UserProfile မှာ phone_number သိမ်းစရာရှိရင် ဒီနေရာမှာ ဆက်သိမ်းနိုင်ပါတယ်
-           # phone = form.cleaned_data.get('phone_number')
-            #if phone:
-              #  UserProfile.objects.create(user=user, phone_number=phone)
-
             messages.success(request, 'အကောင့်ဖွင့်ခြင်း အောင်မြင်ပါသည်။ ကျေးဇူးပြု၍ Login ဝင်ပါ။')
             return redirect('login')
     else:
-        form = CustomUserCreationForm()
+        form = UserCreationForm()
 
     return render(request, 'units_app/register.html', {'form': form})
+
+
+
+
 @login_required
 def profile_edit_view(request):
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+
     if request.method == 'POST':
-        user = request.user
-        new_username = request.POST.get('username')
-        if new_username:
-            user.username = new_username
-            user.save()
-            messages.success(request, 'Username ကို အောင်မြင်စွာ ပြောင်းလဲပြီးပါပြီ!')
-            return redirect('profile_edit')
-    return render(request, 'units_app/profile_edit.html')
-@login_required
-def password_change_view(request):
-    if request.method == 'POST':
-        form = PasswordChangeForm(request.user, request.POST)
-        if form.is_valid():
-            user = form.save()
-            update_session_auth_hash(request, user)  # အကောင့်မှ ထွက်မသွားအောင် ထိန်းပေးသည်
-            messages.success(request, 'စကားဝှက်ကို အောင်မြင်စွာ ပြောင်းလဲပြီးပါပြီ!')
-            return redirect('profile_edit')
+        if 'update_profile' in request.POST:
+            username_form = UsernameChangeForm(request.POST, instance=request.user)
+            profile_form = UserProfileForm(request.POST, instance=profile)
+            password_form = PasswordChangeForm(request.user)
+
+            if profile_form.has_changed() or username_form.has_changed():
+                if username_form.is_valid() and profile_form.is_valid():
+                    username_form.save()
+                    profile_form.save()
+                    messages.success(request, 'Profile အချက်အလက်များ အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ။')
+                     # 💡 အချက်အလက် အကုန်ဖြည့်ပြီး သိမ်းလိုက်တာနဲ့ Home သို့ တိုက်ရိုက်ရောက်သွားပါမည်
+                    return redirect('profile_edit')
+            else:
+                messages.info(request, 'အချက်အလက်များဖြည့်သွင်းပါ။')
+                return redirect('profile_edit')
+        elif 'change_password' in request.POST:
+            username_form = UsernameChangeForm(instance=request.user)
+            profile_form = UserProfileForm(instance=profile)
+            password_form = PasswordChangeForm(request.user, request.POST)
+
+            if password_form.is_valid():
+                user = password_form.save()
+                update_session_auth_hash(request, user)
+                messages.success(request, 'စကားဝှက် (Password) အောင်မြင်စွာ ပြောင်းလဲပြီးပါပြီ။')
+                return redirect('profile_edit')
     else:
-        form = PasswordChangeForm(request.user)
-    return render(request, 'units_app/password_change.html', {'form': form})
+        username_form = UsernameChangeForm(instance=request.user)
+        profile_form = UserProfileForm(instance=profile)
+        password_form = PasswordChangeForm(request.user)
+
+    context = {
+        'username_form': username_form,
+        'profile_form': profile_form,
+        'password_form': password_form,
+    }
+    return render(request, 'units_app/profile_edit.html', context)
+
+
+def login_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            login(request, form.get_user())
+            return redirect('unit_list')  # အောင်မြင်ပါက ရောက်ရမည့် home url name
+    else:
+        form = AuthenticationForm()
+
+    return render(request, 'units_app/login.html', {'form': form})
 
 
 
+@login_required
+def home_view(request):
+    try:
+        profile = request.user.userprofile
+
+        # အချက်အလက် မပြည့်စုံသေးပါက Profile ဖြည့်ရန် ပို့မည်
+        if not profile.name or not profile.gazette_no:
+            messages.warning(request, 'ကျေးဇူးပြု၍ ပထမဦးစွာ ကိုယ်ရေးအချက်အလက်များကို ပြည့်စုံစွာ ဖြည့်စွက်ပါ။')
+            return redirect('profile_edit')
+
+    except UserProfile.DoesNotExist:
+        return redirect('profile_edit')
+
+    # အချက်အလက် ပြည့်စုံပြီးသားဆိုရင် Home စာမျက်နှာကို ပြမည်
+    return render(request, 'units_app/unit_list.html')
 
 
+# တပ်ဖွဲ့ဝင်များ စာရင်းပြမည့် View
+@login_required
+def profile_list_view(request):
+
+    profiles = UserProfile.objects.all().order_by('bc_no')
+    context = {'profiles': profiles}
+    return render(request, 'units_app/profile_list.html', context)
+
+# တစ်ယောက်ချင်းစီ၏ အသေးစိတ် အချက်အလက်ပြမည့် View
+@login_required
+def profile_detail_view(request, pk):
+    profile = get_object_or_404(UserProfile, pk=pk)
+    context = {'profile': profile}
+    return render(request, 'units_app/profile_detail.html', context)
 
